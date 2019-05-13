@@ -1,0 +1,100 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="~/layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="~/layuiadmin/style/admin.css" media="all">
+    <script src="~/layuiadmin/bk.js"></script>
+    <script src="~/vue-2.5.22/dist/vue.min.js"></script>
+    <title>Ajax 分页</title>
+</head>
+<body>
+    <div class="layui-card">
+        <div class="layui-card-header">所有入库商品列表</div>
+
+        <div class="layui-card-body" id="app-1">
+            <dl class="layuiadmin-card-status">
+                <dd v-for="todo in todos">
+                    <div class="layui-status-img"><a href="javascript:;"><img src="../../layuiadmin/style/res/logo.png"></a></div>
+                    <div>
+                        <p>{{ todo.商品名称 }}</p>
+                        <span>入库日期： {{ todo.日期 | dateFormat }}</span>
+                    </div>
+                </dd>
+            </dl>
+        </div>
+
+        <div class="layui-card-body">
+            <div id="test-laypage-demo0"></div>
+        </div>
+    </div>
+
+    <script src="~/layuiadmin/jquery.min.js"></script>
+    <script src="~/layuiadmin/layui/layui.js"></script>
+    <script>
+        var maxRecord = @ViewBag.maxrecord;
+        var pageSize = 6;
+        var getData = function (p_page) {
+                  $.ajax({
+                      type: 'post',
+                      url: '@Url.Action("IndexAjax", "Home")', ///?page=' + p_page + '&limit=' + pageSize,
+                      dataType: 'json',
+                      data: { page: p_page, limit: pageSize },
+                      success: function (result) {
+                          maxRecord = result.count;
+                          vm.todos = result.data;
+                      }
+                  })
+        }
+        $(function () {
+              
+        })
+
+        var vm = new Vue({
+            el: '#app-1',
+            data: {
+                todos: []
+            },
+            filters: {
+                dateFormat: function (value) {
+                    return jsonDateTime(value);
+                }
+            }
+        });
+        getData(1);
+
+    layui.config({
+        base: '@Url.Action("", "layuiadmin/")' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+      }).use(['index', 'laypage', 'form'], function () {
+          var laypage = layui.laypage,
+              form = layui.form;
+
+          //总页数低于页码总数
+
+
+          laypage.render({
+              elem: 'test-laypage-demo0'
+              , theme: '#1E9FFF'
+              , count: maxRecord //数据总数
+              , limit: pageSize
+              , jump: function (obj, first) {
+                  //console.log(obj.curr);
+                  getData(obj.curr);
+              }
+          });
+      });
+
+
+    </script>
+</body>
+</html>
